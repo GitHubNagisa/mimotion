@@ -1,42 +1,25 @@
 name: 刷步数
-
 on:
-  schedule:
-    - cron: '58 0,2,4,8,14 * * *'
   workflow_dispatch:
+  schedule:
+    - cron: '0 10 * * *' #UTC时间，自己按需改
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
     steps:
-      - name: Checkout codes
-        uses: actions/checkout@v5
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          token: ${{ secrets.PAT }} #此处PAT需要申请，教程详见：README
-      - name: Update system and install zsh
+          python-version: '3.11'
+      - name: Install dependencies
         run: |
-          sudo -E apt-get -qq update
-          sudo -E apt-get install zsh -y
-          
-      - name: 初始化Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.10"
-          
-      - name: 开始
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run mimotion
         env:
-            CONFIG: ${{ secrets.CONFIG }}
-            AES_KEY: ${{ secrets.AES_KEY }}
-        run: |
-          pip3 install requests pytz pycryptodome
-          python3 main.py
-
-      - name: persist tokens
-        run: |
-# git config --global user.name "xxx"
-# git config --global user.email "xxx"
-# git add .
-# git commit -m "auto save log"
-# git push
-
+          USERNAME: ${{ secrets.USERNAME }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+        run: python main.py
